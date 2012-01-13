@@ -1,4 +1,4 @@
-package mygame;
+package forTesting;
 
 import com.jme3.app.SimpleApplication;
 import com.jme3.material.Material;
