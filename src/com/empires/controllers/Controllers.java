@@ -4,10 +4,14 @@
  */
 package com.empires.controllers;
 
+import com.jme3.input.controls.ActionListener;
+
 /**
  *
  * @author karlos
  */
-public class Controllers {
-    
+public class Controllers implements ActionListener{
+    public void onAction(String name, boolean isPressed, float tpf){
+        
+    }
 }
