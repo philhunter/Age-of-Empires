@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.empires.terrain;
+package com.empires.ControllerTerrain;
 
 import com.empires.Inicio;
 import com.jme3.asset.AssetManager;

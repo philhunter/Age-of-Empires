@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.empires.ScreenController;
+package com.empires.ControllerScreen;
 
 import com.empires.Inicio;
 import com.jme3.asset.AssetManager;
