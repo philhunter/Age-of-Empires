@@ -36,6 +36,19 @@ public class Inicio extends SimpleApplication{
         
         app.start();
     }
+    public boolean isOgl() {
+            return true;//Thread.currentThread() == thread;
+    }
+    private static Inicio staticApplication;
+
+    public Inicio(){
+        staticApplication = this;
+    }
+
+    public static Inicio getApplication(){
+        return staticApplication;
+    }
+
     @Override
     public void simpleInitApp() {
                 // load sky
