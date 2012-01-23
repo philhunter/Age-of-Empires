@@ -4,6 +4,7 @@
  */
 package com.empires.ScreenController;
 
+import com.empires.Inicio;
 import com.jme3.asset.AssetManager;
 import com.jme3.audio.AudioRenderer;
 import com.jme3.input.InputManager;
@@ -38,7 +39,7 @@ public class ControllerScreen implements ScreenController{
    AudioRenderer audioRenderer;
    ViewPort guiViewPort;
    Nifty nifty;
-   Main main;
+   Inicio main;
    String ModelSelected="None";
    String ToolSelected="None";
    String SugestionSelected="Sugestoes";
@@ -48,10 +49,10 @@ public class ControllerScreen implements ScreenController{
    float RotationZ=0f;
    float lastRadius=6f;
    float lastHeight=1f;
-   Connect network;
+   
    // </editor-fold>
    Screen screen;
-   public ControllerScreen(AssetManager assetManager,InputManager inputManager,AudioRenderer audioRenderer,ViewPort guiViewPort,LoadModels loadM,Main main,Connect network){
+   public ControllerScreen(AssetManager assetManager,InputManager inputManager,AudioRenderer audioRenderer,ViewPort guiViewPort,Inicio main){
        this.assetManager=assetManager;
        this.inputManager=inputManager;
        this.audioRenderer=audioRenderer;
@@ -134,8 +135,8 @@ public class ControllerScreen implements ScreenController{
    public void changeScreen(String qual){
        if(qual.equals("null"))
            LoadDropSugestion();
-       else
-            main.changeScreen(qual);
+       //else
+            //main.changeScreen(qual);
    }
    /*
     * Fim alterar Screen
@@ -151,13 +152,13 @@ public class ControllerScreen implements ScreenController{
    }
    
    public void changeVisibleT(String id){
-       main.setPanelVisible(id, true);
+       //main.setPanelVisible(id, true);
        if(id.equals("sugestoesPanel"))
            LoadDropSugestion();
    }
    
    public void changeVisibleT(String id,boolean valor){
-       main.setPanelVisible(id, valor);
+       //main.setPanelVisible(id, valor);
    }
    // </editor-fold>
    
@@ -244,7 +245,7 @@ public class ControllerScreen implements ScreenController{
         //System.out.println(event.getValue());
         if(lastScale!=event.getValue()){
            float a= (event.getValue());
-           main.setScaleModelSelected(a);
+           //main.setScaleModelSelected(a);
             
             lastScale=event.getValue();
         }
@@ -257,7 +258,7 @@ public class ControllerScreen implements ScreenController{
         //System.out.println(event.getValue());
         if(lastRadius!=event.getValue()){
            float a= (event.getValue());
-           main.changeRadiusEditor((int) a);
+           //main.changeRadiusEditor((int) a);
         }
         //Main.getApplication().getModelSelected().scale(event.getValue());
         
@@ -268,7 +269,7 @@ public class ControllerScreen implements ScreenController{
         //System.out.println(event.getValue());
         if(lastHeight!=event.getValue()){
            float a= (event.getValue());
-           main.changeHeightEditor((int) a);
+           //main.changeHeightEditor((int) a);
         }
         //Main.getApplication().getModelSelected().scale(event.getValue());
         
@@ -279,7 +280,7 @@ public class ControllerScreen implements ScreenController{
         //System.out.println(event.getValue());
         if(RotationX!=event.getValue()){
            float a= (event.getValue());
-           main.setRotationXModelSelected(a);
+           //main.setRotationXModelSelected(a);
             nifty.getCurrentScreen().findElementByName("RotacaoXs").getRenderer(TextRenderer.class).setText("          "+a+"");
             RotationX=event.getValue();
         }
@@ -292,7 +293,7 @@ public class ControllerScreen implements ScreenController{
         //System.out.println(event.getValue());
         if(RotationY!=event.getValue()){
            float a= (event.getValue());
-           main.setRotationYModelSelected(a);
+           //main.setRotationYModelSelected(a);
             nifty.getCurrentScreen().findElementByName("RotacaoYs").getRenderer(TextRenderer.class).setText("          "+a+"");
             RotationY=event.getValue();
         }
@@ -305,7 +306,7 @@ public class ControllerScreen implements ScreenController{
         //System.out.println(event.getValue());
         if(RotationZ!=event.getValue()){
            float a= (event.getValue());
-           main.setRotationZModelSelected(a);
+           //main.setRotationZModelSelected(a);
            nifty.getCurrentScreen().findElementByName("RotacaoZs").getRenderer(TextRenderer.class).setText("          "+a+"");
            RotationZ=event.getValue();
         }
@@ -332,17 +333,17 @@ public class ControllerScreen implements ScreenController{
    @NiftyEventSubscriber(id="terrain")
    public void OnChangeTooltoTerrain(final String id, final DropDownSelectionChangedEvent<String> event){
         if(event.getSelection().equals("")){
-            main.changeTool("select","");
+            //main.changeTool("select","");
             changeVisibleT("colorPaint");
         }else if(event.getSelection().equals("Elevar")){
-            main.changeTool("terrain","raise");
+           // main.changeTool("terrain","raise");
         }else if(event.getSelection().equals("Baixar")){
-            main.changeTool("terrain","lower");
+           // main.changeTool("terrain","lower");
         }else if(event.getSelection().equals("Pintar")){
-            main.changeTool("terrain","paint");
+           // main.changeTool("terrain","paint");
             changeVisibleT("colorPaint",true);
         }else if(event.getSelection().equals("Remover Tinta")){
-            main.changeTool("terrain","Rpaint");
+           // main.changeTool("terrain","Rpaint");
             changeVisibleT("colorPaint",true);
         }
         
@@ -363,13 +364,13 @@ public class ControllerScreen implements ScreenController{
    @NiftyEventSubscriber(id="colorPaint")
    public void OnChangePaint(final String id, final DropDownSelectionChangedEvent<String> event){
             if(event.getSelection().equals("")){
-                main.changeColorPaint(-1);
+               // main.changeColorPaint(-1);
             }else if(event.getSelection().equals("Relva")){
-                main.changeColorPaint(0);
+               // main.changeColorPaint(0);
             }else if(event.getSelection().equals("Areia")){
-                main.changeColorPaint(1);
+               // main.changeColorPaint(1);
             }else if(event.getSelection().equals("Estrada")){
-                main.changeColorPaint(2);
+               // main.changeColorPaint(2);
             }
     }
    
@@ -400,7 +401,7 @@ public class ControllerScreen implements ScreenController{
    public void autentication(){
        String user=nifty.getCurrentScreen().findElementByName("username").getControl(TextFieldControl.class).getText();
        String pass=nifty.getCurrentScreen().findElementByName("password").getControl(TextFieldControl.class).getText();
-       boolean serverState=main.getConnected();
+       boolean serverState;//=main.getConnected();
        changeVisibleT("dadosLogin",false);
        changeVisibleT("aentrar",true);
        changeVisibleT("autentication",false);
@@ -415,10 +416,10 @@ public class ControllerScreen implements ScreenController{
                nifty.getCurrentScreen().findElementByName("loginError").getRenderer(TextRenderer.class).setText("Preencha o Username\nPreencha a Password");
        }
        if(!user.equals("") && !pass.equals("")){
-           if(serverState)
-                main.checkAutentication(user,pass);
-           else
-               main.changeScreen("null");
+           //if(serverState)
+                //main.checkAutentication(user,pass);
+           //else
+               //main.changeScreen("null");
        }
            
    }
@@ -428,7 +429,7 @@ public class ControllerScreen implements ScreenController{
        String pass=nifty.getCurrentScreen().findElementByName("password").getControl(TextFieldControl.class).getText();
        String confpass=nifty.getCurrentScreen().findElementByName("confpassword").getControl(TextFieldControl.class).getText();
        String email=nifty.getCurrentScreen().findElementByName("email").getControl(TextFieldControl.class).getText();
-       boolean serverState=main.getConnected();
+       //boolean serverState=main.getConnected();
        
        boolean registar=false;
        String mensagem="";
@@ -461,10 +462,10 @@ public class ControllerScreen implements ScreenController{
            changeVisibleT("registerpanel",false);
            changeVisibleT("aentrar",true);
            if(!user.equals("") && !pass.equals("")){
-               if(serverState)
-                    main.RegisterNewPlayer(user,pass,email);
-               else
-                   main.changeScreen("Autentication");
+               //if(serverState)
+              //      main.RegisterNewPlayer(user,pass,email);
+              // else
+              //     main.changeScreen("Autentication");
            }
        }else{
            nifty.getCurrentScreen().findElementByName("RegisterError").getRenderer(TextRenderer.class).setText(mensagem);
@@ -482,15 +483,15 @@ public class ControllerScreen implements ScreenController{
    public void SendSugestion(){
       String a= nifty.getCurrentScreen().findElementByName("text_input").getControl(TextFieldControl.class).getText();
        System.out.println("Tipo: "+SugestionSelected+"\nMensagem: "+a);
-       main.send(SugestionSelected, a);
+       //main.send(SugestionSelected, a);
        nifty.getCurrentScreen().findElementByName("text_input").getControl(TextFieldControl.class).setText("");
-       main.setPanelVisible("sugestoesPanel", false);
+       //main.setPanelVisible("sugestoesPanel", false);
        
    }
    
    public void closeSugestion(){
        nifty.getCurrentScreen().findElementByName("text_input").getControl(TextFieldControl.class).setText("");
-       main.setPanelVisible("sugestoesPanel", false);
+       //main.setPanelVisible("sugestoesPanel", false);
    }
    
    
