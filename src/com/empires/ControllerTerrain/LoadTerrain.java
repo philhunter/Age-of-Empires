@@ -8,8 +8,10 @@ import com.empires.Inicio;
 import com.jme3.asset.AssetManager;
 import com.jme3.export.binary.BinaryImporter;
 import com.jme3.font.BitmapText;
+import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Vector3f;
 import com.jme3.post.FilterPostProcessor;
 import com.jme3.post.filters.FogFilter;
 import com.jme3.renderer.Camera;
@@ -45,6 +47,7 @@ public class LoadTerrain extends Thread{
     private AssetManager assetManager;
     private Inicio main;
     private Node rootNode;
+    private Node sceneNode=new Node("Terreno");
     private ViewPort viewPort;
     private Material matRock;
     
@@ -55,43 +58,47 @@ public class LoadTerrain extends Thread{
        this.assetManager=assetManager;
     }
     
-    FilterPostProcessor fpp;
-    FogFilter fog;
+    FilterPostProcessor fpp;  
     public void iniciaFrog(){
         fpp=new FilterPostProcessor(assetManager);
-        //fpp.setNumSamples(4);
-        fog=new FogFilter();
+        FogFilter fog=new FogFilter();
         fog.setFogColor(new ColorRGBA(0.9f, 0.9f, 0.9f, 1.0f));
-        fog.setFogDistance(300);
-        fog.setFogDensity(1.0f);
+        fog.setFogDistance(155);
+        fog.setFogDensity(2.0f);
         fpp.addFilter(fog);
         viewPort.addProcessor(fpp);
+
     }
     @Override
     public void run(){
         LoadMaterial();
-        iniciaFrog();
+       
+        addLights();
         loadTerrain("level1");
+        //iniciaFrog();
         //createMap();
     }
     private void LoadMaterial(){
          // TERRAIN TEXTURE material
-        matRock = new Material(assetManager, "Common/MatDefs/Terrain/TerrainLighting.j3md");
+        //matRock = new Material(assetManager, "Common/MatDefs/Terrain/TerrainLighting.j3md");
         //matRock.setBoolean("useTriPlanarMapping", false);
-
+        matRock = new Material(assetManager, "Common/MatDefs/Terrain/TerrainLighting.j3md");
+        matRock.setBoolean("useTriPlanarMapping", false);
+        matRock.setBoolean("WardIso", true);
+        
         matRock.setTexture("AlphaMap",assetManager.loadTexture("Textures/terrain-alpha/level1-terrain-level1-alphablend0.png"));
 
         // GRASS texture
         Texture grass = assetManager.loadTexture("Textures/level1/Grass0146_5_thumbhuge.jpg");
         grass.setWrap(WrapMode.Repeat);
-        matRock.setTexture("DiffuseMap_1", grass);
-        matRock.setFloat("DiffuseMap_1_scale", grassScale);
+        matRock.setTexture("DiffuseMap", grass);
+        matRock.setFloat("DiffuseMap_0_scale", grassScale);
 
         // DIRT texture
         Texture dirt = assetManager.loadTexture("Textures/dirt.jpg");
         dirt.setWrap(WrapMode.Repeat);
-        matRock.setTexture("DiffuseMap", dirt);
-        matRock.setFloat("DiffuseMap_0_scale", dirtScale);
+        matRock.setTexture("DiffuseMap_1", dirt);
+        matRock.setFloat("DiffuseMap_1_scale", dirtScale);
 
         
         // WIREFRAME material
@@ -123,9 +130,10 @@ public class LoadTerrain extends Thread{
                
                 Terreno=(TerrainQuad) imp.load(new BufferedInputStream(fis));
                 Terreno.setMaterial(matRock);
+                Terreno.setName(level);
                 float duration = (System.currentTimeMillis() - start) / 1000.0f;
                 System.out.println("Terreno Carregado em "+duration+" segundos");
-                rootNode.attachChild((Node)Terreno);
+                main.getTerrain().attachChild((Node)Terreno);
                 //main.TCache.addTerrain(pos, Terreno);
                // System.out.println("Load took " + duration + " seconds");
             } catch(OutOfMemoryError ex){
@@ -145,120 +153,21 @@ public class LoadTerrain extends Thread{
             }
         }
     }
-    private void createMap() {
-        matTerrain = new Material(assetManager, "Common/MatDefs/Terrain/TerrainLighting.j3md");
-        matTerrain.setBoolean("useTriPlanarMapping", false);
-        matTerrain.setBoolean("WardIso", true);
 
-        // ALPHA map (for splat textures)
-        matTerrain.setTexture("AlphaMap", assetManager.loadTexture("Textures/Terrain/splat/alphamap.png"));
-
-        // HEIGHTMAP image (for the terrain heightmap)
-        Texture heightMapImage = assetManager.loadTexture("Textures/Terrain/splat/mountains512.png");
-
-        // GRASS texture
-        Texture grass = assetManager.loadTexture("Textures/Terrain/splat/grass.jpg");
-        grass.setWrap(WrapMode.Repeat);
-        matTerrain.setTexture("DiffuseMap", grass);
-        matTerrain.setFloat("DiffuseMap_0_scale", grassScale);
-
-
-        // DIRT texture
-        Texture dirt = assetManager.loadTexture("Textures/Terrain/splat/dirt.jpg");
-        dirt.setWrap(WrapMode.Repeat);
-        matTerrain.setTexture("DiffuseMap_1", dirt);
-        matTerrain.setFloat("DiffuseMap_1_scale", dirtScale);
-
-        // ROCK texture
-        Texture rock = assetManager.loadTexture("Textures/Terrain/splat/road.jpg");
-        rock.setWrap(WrapMode.Repeat);
-        matTerrain.setTexture("DiffuseMap_2", rock);
-        matTerrain.setFloat("DiffuseMap_2_scale", rockScale);
-
-
-        Texture normalMap0 = assetManager.loadTexture("Textures/Terrain/splat/grass_normal.jpg");
-        normalMap0.setWrap(WrapMode.Repeat);
-        Texture normalMap1 = assetManager.loadTexture("Textures/Terrain/splat/dirt_normal.png");
-        normalMap1.setWrap(WrapMode.Repeat);
-        Texture normalMap2 = assetManager.loadTexture("Textures/Terrain/splat/road_normal.png");
-        normalMap2.setWrap(WrapMode.Repeat);
-        matTerrain.setTexture("NormalMap", normalMap0);
-        matTerrain.setTexture("NormalMap_1", normalMap2);
-        matTerrain.setTexture("NormalMap_2", normalMap2);
-
-        matWire = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        matWire.getAdditionalRenderState().setWireframe(true);
-        matWire.setColor("Color", ColorRGBA.Green);
-
-
-        // CREATE HEIGHTMAP
-        AbstractHeightMap heightmap = null;
-        try {
-            heightmap = new ImageBasedHeightMap(heightMapImage.getImage(), 1f);
-            heightmap.load();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        if (new File("terrainsave.jme").exists()) {
-            loadTerrain();
-        } else {
-            // create the terrain as normal, and give it a control for LOD management
-            TerrainQuad terrainQuad = new TerrainQuad("terrain", 65, 129, heightmap.getHeightMap());//, new LodPerspectiveCalculatorFactory(getCamera(), 4)); // add this in to see it use entropy for LOD calculations
-            TerrainLodControl control = new TerrainLodControl(terrainQuad, getCamera());
-            control.setLodCalculator( new DistanceLodCalculator(65, 2.7f) ); // patch size, and a multiplier
-            terrainQuad.addControl(control);
-            terrainQuad.setMaterial(matTerrain);
-            terrainQuad.setLocalTranslation(0, -100, 0);
-            terrainQuad.setLocalScale(4f, 0.25f, 4f);
-            rootNode.attachChild(terrainQuad);
-            
-            this.terrain = terrainQuad;
-        }
-    }
-    private void loadTerrain() {
-        FileInputStream fis = null;
-        try {
-            long start = System.currentTimeMillis();
-            // remove the existing terrain and detach it from the root node.
-            if (terrain != null) {
-                Node existingTerrain = (Node)terrain;
-                existingTerrain.removeFromParent();
-                existingTerrain.removeControl(TerrainLodControl.class);
-                existingTerrain.detachAllChildren();
-                terrain = null;
-            }
-
-            // import the saved terrain, and attach it back to the root node
-            File f = new File("terrainsave.jme");
-            fis = new FileInputStream(f);
-            BinaryImporter imp = BinaryImporter.getInstance();
-            imp.setAssetManager(assetManager);
-            terrain = (TerrainQuad) imp.load(new BufferedInputStream(fis));
-            rootNode.attachChild((Node)terrain);
-
-            float duration = (System.currentTimeMillis() - start) / 1000.0f;
-            System.out.println("Load took " + duration + " seconds");
-
-            // now we have to add back the camera to the LOD control
-            TerrainLodControl lodControl = ((Node)terrain).getControl(TerrainLodControl.class);
-            if (lodControl != null)
-                lodControl.setCamera(getCamera());
-
-        } catch (IOException ex) {
-            Logger.getLogger(LoadTerrain.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (fis != null) {
-                    fis.close();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(LoadTerrain.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
     private Camera getCamera(){
         return main.getCamera();
+    }
+    
+    public void addLights(){
+        DirectionalLight sun = new DirectionalLight();
+        Vector3f lightDir=new Vector3f(-0.37352666f, -0.50444174f, -0.7784704f);
+        sun.setDirection(lightDir);
+        sun.setColor(ColorRGBA.White.clone().multLocal(2));
+        main.getTerrain().addLight(sun);
+        /*DirectionalLight sun = new DirectionalLight();
+        Vector3f lightDir=new Vector3f(-0.37352666f, -0.50444174f, -0.7784704f);
+        sun.setDirection(lightDir);
+        sun.setColor(ColorRGBA.White.clone().multLocal(2));
+        rootNode.addLight(sun);*/
     }
 }
