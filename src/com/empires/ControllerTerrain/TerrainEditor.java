@@ -4,17 +4,25 @@
  */
 package com.empires.ControllerTerrain;
 
+import com.empires.ControllerTerrain.Tools.TerrainTool;
 import com.empires.Inicio;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.MatParam;
+import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.Spatial;
+import com.jme3.scene.VertexBuffer;
+import com.jme3.scene.shape.Sphere;
 import com.jme3.terrain.ProgressMonitor;
 import com.jme3.terrain.Terrain;
 import com.jme3.texture.Texture;
 import com.jme3.texture.Texture.WrapMode;
+import com.jme3.util.IntMap.Entry;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -32,10 +40,25 @@ import jme3tools.converters.ImageToAwt;
 public class TerrainEditor {
     Node rootNode;
     Inicio main;
+    TerrainTool terrainTool;
+    
+    
     private Node terrainNode;
     AssetManager assetManager;
     private boolean NeedToSave=false;
     private String DEFAULT_TERRAIN_TEXTURE="";
+    
+    public TerrainEditor(Inicio main){
+        this.main=main;
+        this.assetManager=main.getAssetManager();
+        this.rootNode=main.getTerrain();
+        
+    }
+    
+    public void moveMarke(Vector3f newLoc){
+        markerMoved(newLoc);
+    }
+    
     public void setNeedsSave(boolean save){
         this.NeedToSave=save;
     }
@@ -520,6 +543,138 @@ public class TerrainEditor {
             } catch (ExecutionException ex) {
                 //Exceptions.printStackTrace(ex);
             }
+        }
+    }
+    
+    public float getRadius(){
+        return radius;
+    }
+    public float getHeight(){
+        return height;
+    }
+    
+    public void setRadius(float radius){
+        this.radius=radius;
+    }
+    public void setHeight(float height){
+        this.height=height;
+    }
+    
+    
+    Geometry markerPrimary;
+    Geometry markerSecondary;
+    float radius=10;
+    float weight;
+    float height=10;
+    float maxToolSize = 20; // override in sub classes
+    
+    /**
+     * The tool was selected, start showing the marker.
+     * @param manager
+     * @param parent node that the marker will attach to
+     */
+    public void activate(Node parent) {
+        //addMarker(parent);
+    }
+    
+
+    /**
+     * Location of the primary editor marker
+     */
+    public Vector3f getMarkerPrimaryLocation() {
+        if (markerPrimary != null)
+            return markerPrimary.getLocalTranslation();
+        else
+            return null;
+    }
+    
+    /**
+     * Move the marker to a new location, usually follows the mouse
+     * @param newLoc 
+     */
+    public void markerMoved(Vector3f newLoc) {
+        if (markerPrimary != null)
+            markerPrimary.setLocalTranslation(newLoc);
+    }
+    
+    /**
+     * The radius of the tool has changed, so update the marker
+     * @param radius percentage of the max radius
+     */
+    public void radiusChanged(float radius) {
+        this.radius = maxToolSize*radius;
+        
+        if (markerPrimary != null) {
+            for (Entry e: markerPrimary.getMesh().getBuffers())
+                ((VertexBuffer)e.getValue()).resetObject();
+            ((Sphere)markerPrimary.getMesh()).updateGeometry(8, 8, this.radius);
+        }
+    }
+    
+    /**
+     * The weight of the tool has changed. Optionally change
+     * the marker look.
+     * @param weight percent
+     */
+    public void weightChanged(float weight) {
+        this.weight = weight;
+    }
+    
+    /**
+     * Create the primary marker mesh, follows the mouse.
+     * @param parent it will attach to
+     */
+    public void addMarker(Node parent) {
+        if (markerPrimary == null) {
+            markerPrimary = new Geometry("edit marker primary");
+            Mesh m = new Sphere(8, 8, radius);
+            markerPrimary.setMesh(m);
+            Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            mat.getAdditionalRenderState().setWireframe(true);
+            markerPrimary.setMaterial(mat);
+            markerPrimary.setLocalTranslation(0,0,0);
+            mat.setColor("Color", ColorRGBA.Green);
+            parent.attachChild(markerPrimary);
+            debug("Adicionado Marker");
+        }
+        
+    }
+    public Vector3f getMarker(){
+        return markerPrimary.getLocalTranslation();
+    }
+    /**
+     * Create the secondary marker mesh, placed
+     * with the right mouse button.
+     * @param parent it will attach to
+     */
+    public void addMarkerSecondary(Node parent) {
+        if (markerSecondary == null) {
+            markerSecondary = new Geometry("edit marker secondary");
+            Mesh m2 = new Sphere(8, 8, 0.5f);
+            markerSecondary.setMesh(m2);
+            Material mat2 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            mat2.getAdditionalRenderState().setWireframe(false);
+            markerSecondary.setMaterial(mat2);
+            markerSecondary.setLocalTranslation(0,0,0);
+            mat2.setColor("Color", ColorRGBA.Red);
+        }
+        parent.attachChild(markerSecondary);
+    }
+    
+    /**
+     * Remove the markers from the scene.
+     */
+    public void hideMarkers() {
+        if (markerPrimary != null)
+            markerPrimary.removeFromParent();
+        if (markerSecondary != null)
+            markerSecondary.removeFromParent();
+    }
+
+
+    public void debug(String texto){
+        if(main.isDebug()){
+            main.debug.print(texto);
         }
     }
 }
