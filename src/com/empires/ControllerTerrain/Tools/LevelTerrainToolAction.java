@@ -31,6 +31,7 @@
  */
 package com.empires.ControllerTerrain.Tools;
 
+import com.empires.Inicio;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
@@ -63,7 +64,7 @@ public class LevelTerrainToolAction extends AbstractTerrainToolAction {
         this.levelTerrainLocation = levelTerrainLocation;
         name = "Level terrain";
     }
-
+    
     protected Object doApplyTool(Node rootNode) {
         Terrain terrain =null; //getTerrain(rootNode.getParent().getLookup().lookup(Node.class));
         if (terrain == null)
@@ -71,7 +72,11 @@ public class LevelTerrainToolAction extends AbstractTerrainToolAction {
         modifyHeight(terrain, radius, height);
         return terrain;
     }
-    
+    public void Level(Inicio main){
+        Terrain terrain = (Terrain)main.getTerrain().getChild("level1");
+
+        modifyHeight(terrain, radius, height);
+    }
     protected void doUndoTool(Node rootNode, Object undoObject) {
         if (undoObject == null)
             return;

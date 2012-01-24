@@ -31,6 +31,7 @@
  */
 package com.empires.ControllerTerrain.Tools;
 
+import com.empires.Inicio;
 import com.jme3.material.MatParam;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.Vector2f;
@@ -47,6 +48,7 @@ import java.nio.ByteBuffer;
  * 
  * @author Brent Owens
  */
+
 public class PaintTerrainToolAction extends AbstractTerrainToolAction {
     
     private Vector3f worldLoc;
@@ -54,6 +56,7 @@ public class PaintTerrainToolAction extends AbstractTerrainToolAction {
     private float weight;
     private int selectedTextureIndex;
     String name="";
+    
     public PaintTerrainToolAction(Vector3f markerLocation, float radius, float weight, int selectedTextureIndex) {
         this.worldLoc = markerLocation.clone();
         this.radius = radius;
@@ -61,7 +64,12 @@ public class PaintTerrainToolAction extends AbstractTerrainToolAction {
         this.selectedTextureIndex = selectedTextureIndex;
         name = "Paint terrain";
     }
-
+    public void Paint(Inicio main){
+        Terrain terrain = (Terrain)main.getTerrain().getChild("level1");
+        
+        paintTexture(terrain, worldLoc, radius, weight, selectedTextureIndex);
+    }
+    
     protected Object doApplyTool(Node rootNode) {
         Terrain terrain= null; ///= getTerrain(rootNode.getLookup().lookup(Node.class));
         if (terrain == null)

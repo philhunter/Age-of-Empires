@@ -32,6 +32,7 @@
 
 package com.empires.ControllerTerrain.Tools;
 
+import com.empires.Inicio;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.scene.Node;
@@ -57,15 +58,21 @@ String name;
         name = "Raise terrain";
     }
 
-    protected Object doApplyTool(Node rootNode) {
-        Terrain terrain = null;//getTerrain(rootNode.getLookup().lookup(Node.class));
+    public Object doApplyTool(Inicio main) {
+        Terrain terrain = (Terrain)main.getTerrain().getChild("level1");
         if (terrain == null)
             return null;
         modifyHeight(terrain, radius, height);
         return terrain;
     }
     
-    protected void doUndoTool(Node rootNode, Object undoObject) {
+    public void Raise(Inicio main){
+        Terrain terrain = (Terrain)main.getTerrain().getChild("level1");
+
+        modifyHeight(terrain, radius, height);
+    }
+    
+    public void doUndoTool(Node rootNode, Object undoObject) {
         if (undoObject == null)
             return;
         modifyHeight((Terrain)undoObject, radius, -height);
@@ -103,6 +110,7 @@ String name;
         terrain.adjustHeight(locs, heights);
 
         ((Node)terrain).updateModelBound(); // or else we won't collide with it where we just edited
+        
     }
 
     
