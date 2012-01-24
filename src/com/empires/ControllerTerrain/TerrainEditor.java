@@ -4,7 +4,6 @@
  */
 package com.empires.ControllerTerrain;
 
-import com.empires.ControllerTerrain.Tools.TerrainTool;
 import com.empires.Inicio;
 import com.jme3.asset.AssetManager;
 import com.jme3.material.MatParam;
@@ -40,7 +39,7 @@ import jme3tools.converters.ImageToAwt;
 public class TerrainEditor {
     Node rootNode;
     Inicio main;
-    TerrainTool terrainTool;
+    
     
     
     private Node terrainNode;
