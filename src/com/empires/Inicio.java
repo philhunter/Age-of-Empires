@@ -4,13 +4,31 @@
  */
 package com.empires;
 
+import com.empires.ControllerAction.ControllerKeys;
 import com.empires.ControllerTerrain.LoadTerrain;
+import com.empires.ControllerTerrain.TerrainEditor;
+import com.empires.ControllerTerrain.Tools.TerrainTool;
+import com.empires.Debuger.Debuger;
 import com.jme3.app.SimpleApplication;
+import com.jme3.collision.CollisionResult;
+import com.jme3.collision.CollisionResults;
+import com.jme3.font.BitmapText;
+import com.jme3.input.KeyInput;
+import com.jme3.input.controls.ActionListener;
 import com.jme3.light.DirectionalLight;
+import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
+import com.jme3.math.Quaternion;
+import com.jme3.math.Ray;
+import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
+import com.jme3.scene.Geometry;
+import com.jme3.scene.Mesh;
+import com.jme3.scene.Node;
+import com.jme3.scene.shape.Sphere;
 import com.jme3.system.AppSettings;
 import com.jme3.util.SkyFactory;
+import java.util.ConcurrentModificationException;
 
 
         //Logger. getLogger ( "" ) . setLevel ( Level. SEVERE ) ;
@@ -18,8 +36,31 @@ import com.jme3.util.SkyFactory;
  *
  * @author karlos
  */
+
 public class Inicio extends SimpleApplication{
-    private LoadTerrain loadTerrain;
+    
+    LoadTerrain loadTerrain;
+    ControllerKeys controllerKeys;
+    public Debuger debug=new Debuger();
+    TerrainTool terrainTool;
+    private boolean debuging=true;
+    private boolean activateTool=false;
+    private static Inicio staticApplication;
+    TerrainEditor terrainEditor;
+    private Node SceneTerrain=new Node("Terrenos");
+    private Node SceneObjects=new Node("Objectos");
+    
+    public Inicio(){
+        staticApplication = this;
+    }
+
+    public void activateTerrainTool(boolean activate){
+        activateTool=activate;
+        
+    }
+    public static Inicio getApplication(){
+        return staticApplication;
+    }
     
     public static void main(String[] args) {
         AppSettings settingst = new AppSettings(true);
@@ -36,100 +77,170 @@ public class Inicio extends SimpleApplication{
         
         app.start();
     }
+    
     public boolean isOgl() {
             return true;//Thread.currentThread() == thread;
     }
-    private static Inicio staticApplication;
-
-    public Inicio(){
-        staticApplication = this;
+    
+    public boolean isDebug(){
+        return debuging;
     }
+    
+    public Node getTerrain(){
+        return SceneTerrain;
+    }
+    
+    public Node getObjects(){
+        return SceneObjects;
+    }
+    
+    public TerrainEditor getTerrainEditor(){ 
+        return terrainEditor;
+    }
+    public Vector3f getWorldIntersection() {
+        Vector3f origin= cam.getWorldCoordinates(inputManager.getCursorPosition(), 3.0f);
+        Vector3f direction= cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
+        direction.subtractLocal(origin).normalizeLocal();
 
-    public static Inicio getApplication(){
-        return staticApplication;
+        Ray ray = new Ray(origin, direction);
+        CollisionResults results = new CollisionResults();
+        try{
+            getTerrain().collideWith(ray, results);
+        
+        if (results.size() > 0) {
+            CollisionResult closest = results.getClosestCollision();
+            
+            Quaternion q = new Quaternion();
+            q.lookAt(closest.getContactNormal(), Vector3f.UNIT_Y);
+            //mark.setLocalRotation(q);
+            //Terrain.attachChild(mark);
+            return closest.getContactPoint();
+        }else{
+            //Terrain.detachChild(mark);r
+            //ToutchTerrain=false;
+            return null;
+        }
+        }catch(ConcurrentModificationException ex){
+        
+        }
+        return null;
+    }
+     //Posicao do rato
+    /*public void getPositionMouse(){
+        Vector3f origin= cam.getWorldCoordinates(inputManager.getCursorPosition(), 3.0f);
+        Vector3f direction= cam.getWorldCoordinates(inputManager.getCursorPosition(), 0.3f);
+        direction.subtractLocal(origin).normalizeLocal();
+
+        Ray ray = new Ray(origin, direction);
+        CollisionResults results = new CollisionResults();
+        try{
+            rootNode.collideWith(ray, results);
+        
+        if (results.size() > 0) {
+            CollisionResult closest = results.getClosestCollision();
+            PosMouse=closest.getContactPoint();
+            ToutchTerrain=true;
+            mark.setLocalTranslation(PosMouse);
+            Quaternion q = new Quaternion();
+            q.lookAt(closest.getContactNormal(), Vector3f.UNIT_Y);
+            mark.setLocalRotation(q);
+            Terrain.attachChild(mark);
+        }else{
+            Terrain.detachChild(mark);
+            ToutchTerrain=false;
+        }
+        }catch(ConcurrentModificationException ex){
+        
+        }
+        
+    }*/
+    @Override
+    public void simpleUpdate(float tpf) {
+        if(activateTool){
+            Vector3f pos=getWorldIntersection();
+            if(pos!=null){
+                terrainEditor.markerMoved(pos);
+                textTopRight.setText("X: "+pos.x+"\nY: "+pos.y+"\nZ: "+pos.z);
+                textTopLeft.setText("X: "+terrainEditor.getMarker().x+"\nY: "+terrainEditor.getMarker().y+"\nZ: "+terrainEditor.getMarker().z);
+                
+            }
+            controllerKeys.simpleUpdate(tpf);
+        }
+            
     }
 
     @Override
     public void simpleInitApp() {
-                // load sky
+        loadWriteScreen();
+        controllerKeys=new ControllerKeys(this);
+        loadTerrain=new LoadTerrain(this,rootNode,viewPort,assetManager);
+        rootNode.attachChild(getTerrain());
+        rootNode.attachChild(getObjects());
+        
+        // load sky
         rootNode.attachChild(SkyFactory.createSky(assetManager, "Textures/sky/BrightSky.dds", false));
 
-        inputManager.setCursorVisible(true);
+        controllerKeys.setCursor(true);
         
-        addLights();
-        //addFirstLevel();
-
+        
         flyCam.setMoveSpeed(150);
-        loadTerrain=new LoadTerrain(this,rootNode,viewPort,assetManager);
-        loadTerrain.start();
-    }
-    
-    
-    public void addLights(){
-        //Sun Light
-        /*DirectionalLight sun = new DirectionalLight();
-        Vector3f lightDir=new Vector3f(-0.37352666f, -0.50444174f, -0.7784704f);
-        sun.setDirection(lightDir);
-        sun.setColor(ColorRGBA.White.clone().multLocal(2));
-        rootNode.addLight(sun);*/
-         DirectionalLight sun = new DirectionalLight();
-        Vector3f lightDir=new Vector3f(-0.37352666f, -0.50444174f, -0.7784704f);
-        sun.setDirection(lightDir);
-        sun.setColor(ColorRGBA.White.clone().multLocal(2));
-        rootNode.addLight(sun);
-    }
-    
-    public void addFirstLevel(){
-        //loadTerrain("level1");
-        //rootNode.attachChild(Terreno);
-    }
-    
-    
-   /* BufferedInputStream files;
-    TerrainQuad Terreno;*
-    private void loadTerrain(String level) {
-        FileInputStream fis = null;
-        BinaryImporter imp;
-        fis = null;
         
-        BufferedInputStream files;
-        try {
-            long start = System.currentTimeMillis();
-
-            // import the saved terrain, and attach it back to the root node
-            fis = new FileInputStream(new File("assets/Scenes/terrainsave.jme"));
-            imp = BinaryImporter.getInstance();
-            imp.setAssetManager(assetManager);
-            //rootNode.attachChild(terrain);
-
-            //float duration = (System.currentTimeMillis() - start) / 1000.0f;
-            try{
-                Texture alphe=assetManager.loadTexture("Textures/terrain-alpha/level1-terrain-level1-alphablend0.png");
-                matRock.setTexture("AlphaMap",alphe);
-               
-                Terreno=(TerrainQuad) imp.load(new BufferedInputStream(fis));
-                Terreno.setMaterial(matRock);
-                float duration = (System.currentTimeMillis() - start) / 1000.0f;
-                System.out.println("Terreno Carregado em "+duration+" segundos");
-                //Terreno.setLocalTranslation(new Vector3f(pos.x,0,pos.z));
-                //main.TCache.addTerrain(pos, Terreno);
-               // System.out.println("Load took " + duration + " seconds");
-            } catch(OutOfMemoryError ex){
-               // return loadTerrain(QX, QZ);
-               Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                if (fis != null) {
-                    fis.close();
-                    imp=null;
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(Inicio.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        loadTerrain.start();
+        
+        
+        terrainEditor=new TerrainEditor(this);
+        terrainEditor.addMarker(rootNode);
+        
+        textTopLeft.setText("X: "+terrainEditor.getMarker().x+"\nY: "+terrainEditor.getMarker().y+"\nZ: "+terrainEditor.getMarker().z);
+        
+    }
+    Geometry markerPrimary;
+    int radius=6;
+    public void addMarker(Node parent) {
+        if (markerPrimary == null) {
+            markerPrimary = new Geometry("edit marker primary");
+            Mesh m = new Sphere(8, 8, radius);
+            markerPrimary.setMesh(m);
+            Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+            mat.getAdditionalRenderState().setWireframe(true);
+            markerPrimary.setMaterial(mat);
+            markerPrimary.setLocalTranslation(0,0,0);
+            mat.setColor("Color", ColorRGBA.Green);
+            parent.attachChild(markerPrimary);
+            //debug("Adicionado Marker");
         }
-    }*/
+        
+    }
+    protected BitmapText textTopRight;
+    protected BitmapText textTopLeft;
+    protected BitmapText textTopCenter;
+    //Carrega o que pode escrever o ecra
+    public void loadWriteScreen() {
+        textTopRight = new BitmapText(guiFont, false);
+        textTopRight.setSize(guiFont.getCharSet().getRenderedSize());
+        textTopRight.setLocalTranslation(0, getCamera().getHeight(), 0);
+        textTopRight.setText("");
+        guiNode.attachChild(textTopRight);
+        textTopLeft = new BitmapText(guiFont, false);
+        textTopLeft.setSize(guiFont.getCharSet().getRenderedSize());
+        textTopLeft.setLocalTranslation(getCamera().getWidth()-150, getCamera().getHeight(), 0);
+        textTopLeft.setText("");
+        guiNode.attachChild(textTopLeft);
+        textTopCenter= new BitmapText(guiFont, false);
+        
+        textTopCenter.setSize(guiFont.getCharSet().getRenderedSize());
+
+        textTopCenter.setLocalTranslation((getCamera().getWidth())/2-50, (getCamera().getHeight()), 0);
+
+        textTopCenter.setText("");
+
+        guiNode.attachChild(textTopCenter);
+    }
+    
+    public void setTextCenter(String texto){
+        textTopCenter.setText(texto);
+    }
+    
+
 }
         
